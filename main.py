@@ -19,6 +19,7 @@ pygame.display.set_caption("Space War")
 
 SCORE_FONT = pygame.font.SysFont("comicsans",25)
 
+# CLASSES
 class Ship:
     def __init__(self , x , y):
         self.x = x
@@ -67,18 +68,28 @@ class Enemy:
         if self.x <= 0 or self.x+self.width >= 700:
             self.dir*=-1
 
+# FUNCTIONS
 def gameover(win , enemies , ship ):
     for enemy in enemies:
         if ship.x + ship.width >= enemy.x and ship.x <= enemy.x + enemy.width:
             if ship.y <= enemy.y + enemy.height and ship.y + ship.height >= enemy.y :
                 return True
-
     for enemy in enemies:
         if enemy.y + enemy.height >= WIN_HEIGHT:
-                return True
-    
+                return True  
     return False
 
+def welcome_screen(win):
+    background = pygame.transform.scale( pygame.image.load("assets/bg.png"), (600,600))
+    win.blit(background , (0 , 0))
+    
+    title = pygame.transform.scale( pygame.image.load("assets/spacewar.png"), (300,50))
+    win.blit(title , (WIN_WIDTH//2-150, WIN_HEIGHT//2-90))
+
+    text = SCORE_FONT.render(f"Press Enter to Start", 1 , (255,255,255))
+    win.blit(text,(WIN_WIDTH//2 - 80, WIN_HEIGHT//2 + 100))
+    
+    pygame.display.update()
 
 def draw(win , ship , bullets , enemies ):
     win.fill((20,20,20))
@@ -129,52 +140,71 @@ def handle_hit(ship , bullets , enemies):
 
 # MAIN
 def main():
-
     run = True 
-    
     clock = pygame.time.Clock()
-
     bullets = []
     enemies = []
     
     ship = Ship(WIN_WIDTH//2-30, WIN_HEIGHT-60)
     
     while run:
-
-        clock.tick(60)
-
-        if len(enemies)<10:
-            enemy = Enemy(random.randrange(0,600) , random.randrange(0,300))
-            enemies.append(enemy)
-        
-        draw(WIN , ship , bullets , enemies )
-        
+        welcome_screen(WIN)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                  pygame.quit()
-   
-    
-        if gameover(WIN , enemies , ship):
-            run=False
-    
         keys = pygame.key.get_pressed() 
-        handle_ship_movement(keys , ship) 
-        handle_bullet_movement(keys , ship , bullets)
-        handle_hit(ship , bullets , enemies) 
-
-    run = True
-
-    while run :
-        background = pygame.transform.scale( pygame.image.load("assets/bg.png"), (700,700))
-        WIN.blit(background , (0 , 0))
-        text = SCORE_FONT.render("GAMEOVER",1,(255,255,255))
-        WIN.blit(text,(WIN_WIDTH//2-50, WIN_HEIGHT//2))
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-        pygame.display.update()
+        if keys[pygame.K_RETURN]:
+            run = False    
     
-    pygame.quit()
+    run = True
+    isrunning = True
+
+    while isrunning:    
+        while run:
+            clock.tick(60)
+
+            if len(enemies)<10:
+                enemy = Enemy(random.randrange(0,600) , random.randrange(0,300))
+                enemies.append(enemy)
+            
+            draw(WIN , ship , bullets , enemies )
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+     
+            if gameover(WIN , enemies , ship):
+                run=False
+        
+            keys = pygame.key.get_pressed() 
+            handle_ship_movement(keys , ship) 
+            handle_bullet_movement(keys , ship , bullets)
+            handle_hit(ship , bullets , enemies) 
+
+        run = True
+
+        while run :
+            background = pygame.transform.scale( pygame.image.load("assets/bg.png"), (700,700))
+            WIN.blit(background , (0 , 0))
+            text = SCORE_FONT.render("GAMEOVER",1,(255,255,255))
+            WIN.blit(text,(WIN_WIDTH//2-50, WIN_HEIGHT//2))
+
+            text = SCORE_FONT.render("Press Enter to Continue",1,(255,255,255))
+            WIN.blit(text,(WIN_WIDTH//2-100, WIN_HEIGHT//2+100))
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+            keys = pygame.key.get_pressed() 
+            
+            if keys[pygame.K_RETURN]:
+                run = False    
+            pygame.display.update()
+
+        run = True
+        enemies = []
+        ship.x = WIN_WIDTH//2-30
+        ship.y = WIN_HEIGHT-60
    
 if __name__=="__main__":
     main()
